@@ -1,6 +1,6 @@
 
 import tensorflow as tf
-from tensorflow.python.ops import rnn, rnn_cell, seq2seq
+#from tensorflow.python.ops import rnn, rnn_cell, seq2seq
 import numpy as np
 
 class SentimentModel(object):
@@ -63,17 +63,17 @@ class SentimentModel(object):
 
 		rnn_input = [embedded_tokens_drop[:, i, :] for i in range(self.max_seq_length)]
 		with tf.variable_scope("lstm") as scope:
-			single_cell = rnn_cell.DropoutWrapper(
-				rnn_cell.LSTMCell(hidden_size,
+			single_cell = tf.contrib.rnn.DropoutWrapper(
+				tf.contrib.rnn.LSTMCell(hidden_size,
 								  initializer=tf.random_uniform_initializer(-1.0, 1.0),
 								  state_is_tuple=True),
 								  input_keep_prob=self.dropout_keep_prob_lstm_input,
 								  output_keep_prob=self.dropout_keep_prob_lstm_output)
-			cell = rnn_cell.MultiRNNCell([single_cell] * num_layers, state_is_tuple=True)
+			cell = tf.contrib.rnn.MultiRNNCell([cell for _ in range(num_layers)],state_is_tuple=True)
 
 			initial_state = cell.zero_state(self.batch_size, tf.float32)
 
-			rnn_output, rnn_state = rnn.rnn(cell, rnn_input,
+			rnn_output, rnn_state = tf.contrib.rnn.static_rnn(cell, rnn_input,
 											initial_state=initial_state,
 											sequence_length=self.seq_lengths)
 
